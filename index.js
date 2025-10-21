@@ -13,19 +13,21 @@ const getRandomInt = (min, max) => {
 };
 
 const makeCommits = async () => {
+  const commitData = []; // Collect all commit data to update the file once
+
   for (let i = 0; i < TOTAL_DAYS; i++) {
     const date = moment().subtract(1, 'year').add(i, 'days');
     const commitsToday = getRandomInt(1, 20); // Random number of commits for the day
 
     for (let j = 0; j < commitsToday; j++) {
       const timestamp = date.format();
-
+      
       const data = {
         date: timestamp,
         commitNumber: j + 1,
       };
+      commitData.push(data); // Store commit data
 
-      await jsonfile.writeFile(filePath, data);
       await git.add([filePath]);
       await git.commit(`Commit ${j + 1} on ${timestamp}`, {
         '--date': timestamp,
@@ -34,6 +36,9 @@ const makeCommits = async () => {
 
     console.log(`✅ ${commitsToday} commits on ${date.format("YYYY-MM-DD")}`);
   }
+
+  // Write all commit data to file after all commits are made
+  await jsonfile.writeFile(filePath, commitData);
 
   // Push everything at the end
   await git.push();
